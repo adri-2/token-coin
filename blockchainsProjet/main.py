@@ -5,11 +5,22 @@ from models import TransactionModel
 app = FastAPI(title="Mini Blockchain API")
 
 blockchain = Blockchain()
+from wallet import Wallet
+
 
 
 @app.get("/")
 def home():
     return {"message": "Blockchain API running "}
+
+@app.get("/wallet/new")
+def create_wallet():
+    wallet = Wallet()
+    return {
+        "private_key": wallet.get_private_key(),
+        "public_key": wallet.get_public_key(),
+        "address": wallet.get_address()
+    }
 
 
 @app.get("/chain")
@@ -26,20 +37,26 @@ def create_transaction(tx: TransactionModel):
         blockchain.add_transaction(
             tx.sender,
             tx.receiver,
-            tx.amount
+            tx.amount,
+            tx.signature
         )
         return {"message": "Transaction ajoutée"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+
 
 
 @app.get("/mine")
 def mine():
-    block = blockchain.mine_pending_transactions("miner_adrien")
-    return {
-        "message": "Bloc miné avec succès",
-        "block": block.__dict__
-    }
+    try:
+        block = blockchain.mine_pending_transactions("miner_adrien")
+        return {
+            "message": "Bloc miné avec succès",
+            "block": block.__dict__
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400,detail=str(e))
 
 
 @app.get("/balance/{address}")

@@ -2,6 +2,7 @@ import hashlib
 import json
 import copy
 from datetime import datetime, timezone
+from ecdsa import VerifyingKey, SECP256k1, BadSignatureError
 
 
 class Block:
@@ -18,8 +19,8 @@ class Block:
          "index":self.index ,
         "transactions":self.transactions ,
         "timestamp": self.timestamp ,
-        "previous_hash":        self.previous_hash ,
-        "nonce":        self.nonce 
+        "previous_hash": self.previous_hash ,
+        "nonce": self.nonce 
         }
         block_string = json.dumps(block_data,sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
@@ -28,8 +29,8 @@ class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
         self.pending_transactions = []
-        self.difficulty = 4
-        self.mining_reward = 50
+        self.difficulty = 2
+        self.mining_reward = 1
         
     def create_genesis_block(self):
         return Block(0,[],datetime.now(timezone.utc).isoformat(),"0")
@@ -42,17 +43,63 @@ class Blockchain:
             block.nonce += 1
             block.hash = block.calculate_hash()
             
-    def add_transaction(self,sender,receiver,amount):
-        if sender != "system" and self.get_balance(sender) < amount:
-            raise Exception("Solde insuffisant")
+    def verify_transaction(self, transaction):
+        try:
+            sender_hex = transaction["from"]
+            receiver = transaction["to"]
+            amount = transaction["amount"]
+            signature_hex = transaction["signature"]
+        except KeyError as exc:
+            raise Exception(f"Champ manquant dans la transaction: {exc.args[0]}")
+
+        try:
+            public_key = VerifyingKey.from_string(
+                bytes.fromhex(sender_hex),
+                curve=SECP256k1
+            )
+        except Exception as exc:
+            raise Exception(f"Clé publique invalide dans 'from': {exc}")
+
+        tx_data = f'{sender_hex}{receiver}{amount}'
+
+        try:
+            public_key.verify(
+                bytes.fromhex(signature_hex),
+                tx_data.encode()
+            )
+        except BadSignatureError:
+            raise Exception(
+                f"Signature invalide: les données signées ne correspondent pas. tx_data={tx_data}"
+            )
+        except Exception as exc:
+            raise Exception(f"Erreur pendant la vérification de signature: {exc}")
+
+        return True
+            
+    def add_transaction(self,sender,receiver,amount,signature):
+        # if sender != "system" and self.get_balance(sender) < amount:
+        #     raise Exception("Solde insuffisant")
         
-        self.pending_transactions.append({
+        transaction = {
             "from":sender,
             "to":receiver,
-            "amount":amount
-        })
+            "amount":amount,
+            "signature":signature
+        }
+        if sender != "system":
+            if not self.verify_transaction(transaction):
+                raise Exception("Signature invalide")
+            
+            if self.get_balance(sender) < amount:
+                raise Exception("Solde insuffisant")
+        self.pending_transactions.append(transaction)
+                
     
     def mine_pending_transactions(self,miner_address):
+        # Vérifier s'il y a des transactions en attente
+        if not self.pending_transactions:
+            raise Exception("Aucune transaction à miner")
+        
         # reward avenr minage
         self.pending_transactions.append({
             "from":"system",
