@@ -1,4 +1,4 @@
-from wallet import Wallet
+from blockchainsProjet.walletClient.wallet import Wallet
 
 d=[
   {
