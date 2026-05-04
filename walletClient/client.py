@@ -1,7 +1,7 @@
 import requests
 from wallet import Wallet
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "http://127.0.0.1:8001"
 
 
 def create_wallet():
@@ -44,3 +44,25 @@ def check_balance():
 
     response = requests.get(f"{API_URL}/balance/{address}")
     print("💰 Solde:", response.json())
+
+
+def achat_fictif(amount):
+    """Ajoute un montant fictif au wallet via une transaction 'system' (pour tests).
+
+    Le serveur accepte les transactions avec 'sender' = 'system' sans signature.
+    """
+    wallet = load_wallet()
+    receiver = wallet.get_public_key()
+
+    transaction = {
+        "sender": "system",
+        "receiver": receiver,
+        "amount": amount,
+        "signature": ""
+    }
+
+    response = requests.post(f"{API_URL}/transaction", json=transaction)
+    try:
+        print("📦 Achat fictif:", response.json())
+    except Exception:
+        print("📦 Achat fictif: réponse inattendue", response.text)
