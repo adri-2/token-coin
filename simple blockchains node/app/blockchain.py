@@ -14,6 +14,8 @@ import requests
 def calculate_tx_id(transaction):
     tx_copy = transaction.copy()
     tx_copy.pop("signature", None)
+    tx_copy.pop("timestamp", None)
+    tx_copy.pop("tx_id", None)
 
     tx_string = json.dumps(tx_copy, sort_keys=True).encode()
     return hashlib.sha256(tx_string).hexdigest()

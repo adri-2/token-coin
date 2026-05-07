@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vault DApp</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ── Variables ───────────────────────────────────────── */
+      :root {
+        --bg: #0a0a0f;
+        --surface: #13131a;
+        --border: #2a2a3a;
+        --accent: #00ffb3;
+        --accent2: #7b5ea7;
+        --danger: #ff4d6d;
+        --text: #e8e8f0;
+        --muted: #6b6b85;
+        --mono: "Space Mono", monospace;
+        --sans: "Syne", sans-serif;
+      }
+
+      /* ── Reset ───────────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ── Background grid ─────────────────────────────────── */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: linear-gradient(
+            rgba(0, 255, 179, 0.03) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(0, 255, 179, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── Layout ──────────────────────────────────────────── */
+      .app {
+        position: relative;
+        z-index: 1;
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 4rem;
+      }
+
+      /* ── Header ──────────────────────────────────────────── */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+      }
+
+      .logo h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .logo span {
+        color: var(--accent);
+      }
+
+      /* ── Wallet button ───────────────────────────────────── */
+      #btn-connect {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
+        border: 1px solid var(--accent);
+        background: transparent;
+        color: var(--accent);
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        letter-spacing: 0.05em;
+      }
+
+      #btn-connect:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+
+      #btn-connect.connected {
+        border-color: var(--muted);
+        color: var(--muted);
+      }
+
+      #btn-connect.connected:hover {
+        background: var(--surface);
+        color: var(--text);
+      }
+
+      /* ── Wallet info bar ─────────────────────────────────── */
+      #wallet-info {
+        display: none;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 2rem;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        display: none;
+        gap: 2rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      #wallet-info.visible {
+        display: flex;
+      }
+
+      .wallet-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .wallet-label {
+        color: var(--muted);
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .wallet-value {
+        color: var(--text);
+      }
+      .wallet-value.accent {
+        color: var(--accent);
+      }
+
+      /* ── Stats grid ──────────────────────────────────────── */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        transition: border-color 0.2s;
+      }
+
+      .stat-card:hover {
+        border-color: var(--accent2);
+      }
+
+      .stat-label {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1;
+      }
+
+      .stat-unit {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 0.35rem;
+      }
+
+      /* ── Action cards ────────────────────────────────────── */
+      .actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      @media (max-width: 560px) {
+        .actions-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .action-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: border-color 0.2s;
+      }
+
+      .action-card:hover {
+        border-color: var(--accent2);
+      }
+
+      .action-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .action-title .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .action-title.withdraw .dot {
+        background: var(--danger);
+      }
+
+      /* ── Inputs ──────────────────────────────────────────── */
+      .input-group {
+        display: flex;
+        align-items: stretch;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+        margin-bottom: 0.75rem;
+      }
+
+      .input-group:focus-within {
+        border-color: var(--accent);
+      }
+
+      .input-group input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 0.75rem 1rem;
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        color: var(--text);
+      }
+
+      .input-group input::placeholder {
+        color: var(--muted);
+      }
+
+      .input-suffix {
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.04);
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--muted);
+        border-left: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+      }
+
+      /* ── Buttons ─────────────────────────────────────────── */
+      .btn {
+        width: 100%;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-deposit {
+        background: var(--accent);
+        color: var(--bg);
+      }
+
+      .btn-withdraw {
+        background: var(--danger);
+        color: #fff;
+      }
+
+      .btn-deposit:hover:not(:disabled) {
+        opacity: 0.85;
+      }
+      .btn-withdraw:hover:not(:disabled) {
+        opacity: 0.85;
+      }
+
+      /* ── Transaction log ─────────────────────────────────── */
+      .log-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .log-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .log-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      #btn-clear-log {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        color: var(--muted);
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      #btn-clear-log:hover {
+        color: var(--text);
+      }
+
+      #log-list {
+        list-style: none;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 0.5rem 0;
+      }
+
+      #log-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      #log-list::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      #log-list::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      .log-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.6rem 1.5rem;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      .log-badge {
+        flex-shrink: 0;
+        padding: 0.15rem 0.45rem;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+
+      .log-badge.info {
+        background: rgba(0, 255, 179, 0.15);
+        color: var(--accent);
+      }
+      .log-badge.success {
+        background: rgba(0, 255, 179, 0.15);
+        color: var(--accent);
+      }
+      .log-badge.error {
+        background: rgba(255, 77, 109, 0.15);
+        color: var(--danger);
+      }
+      .log-badge.pending {
+        background: rgba(255, 200, 0, 0.15);
+        color: #ffc800;
+      }
+
+      .log-text {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .log-text a {
+        color: var(--accent2);
+        text-decoration: none;
+      }
+      .log-text a:hover {
+        text-decoration: underline;
+      }
+
+      .log-time {
+        margin-left: auto;
+        color: var(--border);
+        flex-shrink: 0;
+      }
+
+      .log-empty {
+        padding: 2rem;
+        text-align: center;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 0.8rem;
+      }
+
+      /* ── Toast ───────────────────────────────────────────── */
+      #toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.9rem 1.25rem;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        max-width: 320px;
+        z-index: 999;
+        transform: translateY(120%);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      #toast.show {
+        transform: translateY(0);
+      }
+      #toast.success {
+        border-color: var(--accent);
+      }
+      #toast.error {
+        border-color: var(--danger);
+      }
+
+      /* ── Spinner ─────────────────────────────────────────── */
+      .spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── Network badge ───────────────────────────────────── */
+      .network-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 20px;
+        background: rgba(123, 94, 167, 0.2);
+        color: #a78bda;
+        border: 1px solid rgba(123, 94, 167, 0.3);
+      }
+
+      .network-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #a78bda;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- ── Header ── -->
+      <header>
+        <div class="logo">
+          <div class="logo-icon">🔐</div>
+          <h1>Vault<span>.</span>DApp</h1>
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+          "
+        >
+          <span class="network-badge" id="network-badge" style="display: none">
+            <span class="network-dot"></span>
+            <span id="network-name">Sepolia</span>
+          </span>
+          <button id="btn-connect">CONNECTER METAMASK</button>
+        </div>
+      </header>
+
+      <!-- ── Wallet info ── -->
+      <div id="wallet-info">
+        <div class="wallet-item">
+          <span class="wallet-label">Adresse</span>
+          <span class="wallet-value" id="w-address">—</span>
+        </div>
+        <div class="wallet-item">
+          <span class="wallet-label">Balance ETH</span>
+          <span class="wallet-value accent" id="w-eth">—</span>
+        </div>
+        <div class="wallet-item">
+          <span class="wallet-label">Solde dans le Vault</span>
+          <span class="wallet-value accent" id="w-vault">—</span>
+        </div>
+      </div>
+
+      <!-- ── Stats ── -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total déposé dans le Vault</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-unit">ETH (tous utilisateurs)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Mon solde Vault</div>
+          <div class="stat-value" id="stat-mine">—</div>
+          <div class="stat-unit">ETH disponible</div>
+        </div>
+      </div>
+
+      <!-- ── Actions ── -->
+      <div class="actions-grid">
+        <!-- Dépôt -->
+        <div class="action-card">
+          <div class="action-title"><span class="dot"></span> Déposer</div>
+          <div class="input-group">
+            <input
+              type="number"
+              id="deposit-amount"
+              placeholder="1.0"
+              min="1"
+              step="0.1"
+            />
+            <span class="input-suffix">ETH</span>
+          </div>
+          <p
+            style="
+              font-family: var(--mono);
+              font-size: 0.68rem;
+              color: var(--muted);
+              margin-bottom: 0.75rem;
+            "
+          >
+            Minimum : 1 ETH
+          </p>
+          <button class="btn btn-deposit" id="btn-deposit" disabled>
+            DÉPOSER
+          </button>
+        </div>
+
+        <!-- Retrait -->
+        <div class="action-card">
+          <div class="action-title withdraw">
+            <span class="dot"></span> Retirer
+          </div>
+          <div class="input-group">
+            <input
+              type="number"
+              id="withdraw-amount"
+              placeholder="0.5"
+              min="0"
+              step="0.1"
+            />
+            <span class="input-suffix">ETH</span>
+          </div>
+          <p
+            style="
+              font-family: var(--mono);
+              font-size: 0.68rem;
+              color: var(--muted);
+              margin-bottom: 0.75rem;
+            "
+          >
+            Solde max disponible dans le Vault
+          </p>
+          <button class="btn btn-withdraw" id="btn-withdraw" disabled>
+            RETIRER
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Log ── -->
+      <div class="log-card">
+        <div class="log-header">
+          <span class="log-title">Journal des transactions</span>
+          <button id="btn-clear-log">Effacer</button>
+        </div>
+        <ul id="log-list">
+          <li class="log-empty" id="log-empty">Aucune transaction encore.</li>
+        </ul>
+      </div>
+    </div>
+    <!-- /app -->
+
+    <!-- ── Toast ── -->
+    <div id="toast"></div>
+
+    <!-- ══════════════════════════════════════════════════════════
+     Web3.js via CDN
+     ═══════════════════════════════════════════════════════ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
+
+    <script>
+      // ════════════════════════════════════════════════════════════════
+      //  CONFIGURATION  — Mettez à jour ces valeurs
+      // ════════════════════════════════════════════════════════════════
+
+      const CONTRACT_ADDRESS = "0x28864B92F4021513a96ed36bA69856d9C64c52C6";
+
+      // ABI : copié depuis artifacts/contracts/Vault.sol/Vault.json → champ "abi"
+      const ABI = [
+        {
+          inputs: [],
+          name: "deposit",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "uint256", name: "_amount", type: "uint256" },
+          ],
+          name: "withdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getBalance",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalDeposit",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "Deposit",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "Withdraw",
+          type: "event",
+        },
+        { stateMutability: "payable", type: "receive" },
+      ];
+
+      // ════════════════════════════════════════════════════════════════
+      //  ÉTAT DE L'APPLICATION
+      // ════════════════════════════════════════════════════════════════
+
+      let web3 = null; // instance Web3
+      let contract = null; // instance du contrat
+      let userAccount = null; // adresse MetaMask connectée
+
+      // ════════════════════════════════════════════════════════════════
+      //  UTILITAIRES
+      // ════════════════════════════════════════════════════════════════
+
+      /** Raccourcit une adresse Ethereum : 0x1234...5678 */
+      function shortAddr(addr) {
+        return addr.slice(0, 6) + "..." + addr.slice(-4);
+      }
+
+      /** Formate un BigInt wei en ETH lisible : "1.2345 ETH" */
+      function toEth(wei) {
+        return parseFloat(Web3.utils.fromWei(wei.toString(), "ether")).toFixed(
+          4,
+        );
+      }
+
+      /** Heure actuelle HH:MM:SS */
+      function now() {
+        return new Date().toLocaleTimeString("fr-FR");
+      }
+
+      // ── Toast notification ───────────────────────────────────────
+      let toastTimer = null;
+      function showToast(msg, type = "info") {
+        const el = document.getElementById("toast");
+        el.className = `show ${type}`;
+        el.innerHTML =
+          (type === "error" ? "❌" : type === "success" ? "✅" : "ℹ️") +
+          ` <span>${msg}</span>`;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 4000);
+      }
+
+      // ── Journal ──────────────────────────────────────────────────
+      function addLog(text, type = "info") {
+        const list = document.getElementById("log-list");
+        const empty = document.getElementById("log-empty");
+        if (empty) empty.remove();
+
+        const li = document.createElement("li");
+        li.className = "log-item";
+        li.innerHTML = `
+    <span class="log-badge ${type}">${type.toUpperCase()}</span>
+    <span class="log-text">${text}</span>
+    <span class="log-time">${now()}</span>
+  `;
+        list.prepend(li);
+      }
+
+      document.getElementById("btn-clear-log").addEventListener("click", () => {
+        const list = document.getElementById("log-list");
+        list.innerHTML =
+          '<li class="log-empty" id="log-empty">Aucune transaction encore.</li>';
+      });
+
+      // ════════════════════════════════════════════════════════════════
+      //  MISE À JOUR DE L'INTERFACE
+      // ════════════════════════════════════════════════════════════════
+
+      async function refreshUI() {
+        if (!userAccount || !contract) return;
+
+        try {
+          // Balance ETH du compte
+          const ethBal = await web3.eth.getBalance(userAccount);
+          document.getElementById("w-eth").textContent = toEth(ethBal) + " ETH";
+
+          // Solde dans le Vault (appel view — gratuit, pas de gas)
+          const vaultBal = await contract.methods
+            .getBalance()
+            .call({ from: userAccount });
+          document.getElementById("w-vault").textContent =
+            toEth(vaultBal) + " ETH";
+          document.getElementById("stat-mine").textContent = toEth(vaultBal);
+
+          // Total déposé dans le Vault
+          const total = await contract.methods.totalDeposit().call();
+          document.getElementById("stat-total").textContent = toEth(total);
+        } catch (err) {
+          console.error("Erreur refreshUI:", err);
+        }
+      }
+
+      // ════════════════════════════════════════════════════════════════
+      //  CONNEXION METAMASK
+      // ════════════════════════════════════════════════════════════════
+
+      document
+        .getElementById("btn-connect")
+        .addEventListener("click", connectWallet);
+
+      async function connectWallet() {
+        // 1. Vérifier que MetaMask est installé
+        if (!window.ethereum) {
+          showToast("MetaMask non détecté. Installez l'extension.", "error");
+          addLog(
+            'MetaMask introuvable. <a href="https://metamask.io" target="_blank">Installer MetaMask</a>',
+            "error",
+          );
+          return;
+        }
+
+        try {
+          addLog("Demande de connexion MetaMask…", "pending");
+
+          // 2. Demander l'accès aux comptes (ouvre le popup MetaMask)
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          userAccount = accounts[0];
+
+          // 3. Créer l'instance Web3 avec le provider MetaMask
+          web3 = new Web3(window.ethereum);
+          contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+
+          // 4. Vérifier le réseau
+          const chainId = await web3.eth.getChainId();
+          const networks = {
+            1n: "Mainnet",
+            11155111n: "Sepolia",
+            31337n: "Hardhat Local",
+            5n: "Goerli",
+          };
+          const netName = networks[chainId] || `Chain ${chainId}`;
+          document.getElementById("network-name").textContent = netName;
+          document.getElementById("network-badge").style.display =
+            "inline-flex";
+
+          // 5. Mettre à jour l'interface
+          document.getElementById("btn-connect").textContent =
+            shortAddr(userAccount);
+          document.getElementById("btn-connect").classList.add("connected");
+          document.getElementById("w-address").textContent =
+            shortAddr(userAccount);
+          document.getElementById("wallet-info").classList.add("visible");
+
+          document.getElementById("btn-deposit").disabled = false;
+          document.getElementById("btn-withdraw").disabled = false;
+
+          addLog(`Connecté : ${userAccount} (${netName})`, "success");
+          showToast("Portefeuille connecté !", "success");
+
+          await refreshUI();
+
+          // 6. Écouter les events du contrat en temps réel
+          listenToEvents();
+        } catch (err) {
+          console.error(err);
+          addLog("Connexion annulée ou refusée.", "error");
+          showToast("Connexion annulée.", "error");
+        }
+      }
+
+      // Détecter un changement de compte dans MetaMask
+      window.ethereum?.on("accountsChanged", (accounts) => {
+        userAccount = accounts[0] || null;
+        if (userAccount) {
+          document.getElementById("w-address").textContent =
+            shortAddr(userAccount);
+          addLog(`Compte changé : ${userAccount}`, "info");
+          refreshUI();
+        } else {
+          location.reload(); // déconnexion
+        }
+      });
+
+      // Détecter un changement de réseau
+      window.ethereum?.on("chainChanged", () => location.reload());
+
+      // ════════════════════════════════════════════════════════════════
+      //  DÉPÔT
+      // ════════════════════════════════════════════════════════════════
+
+      document
+        .getElementById("btn-deposit")
+        .addEventListener("click", async () => {
+          const input = document.getElementById("deposit-amount");
+          const amount = parseFloat(input.value);
+
+          // Validation
+          if (!amount || amount < 1) {
+            showToast("Montant minimum : 1 ETH", "error");
+            return;
+          }
+
+          const btn = document.getElementById("btn-deposit");
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner"></span> EN ATTENTE…';
+
+          try {
+            const amountWei = web3.utils.toWei(amount.toString(), "ether");
+
+            addLog(
+              `Dépôt de ${amount} ETH en cours… (confirmez dans MetaMask)`,
+              "pending",
+            );
+
+            // Appel de la fonction deposit() avec envoi d'ETH (payable)
+            const receipt = await contract.methods.deposit().send({
+              from: userAccount,
+              value: amountWei,
+            });
+
+            const txHash = receipt.transactionHash;
+            addLog(
+              `✅ Dépôt réussi ! <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank">${txHash.slice(
+                0,
+                20,
+              )}…</a>`,
+              "success",
+            );
+            showToast(`Dépôt de ${amount} ETH confirmé !`, "success");
+            input.value = "";
+            await refreshUI();
+          } catch (err) {
+            console.error(err);
+            const msg = err.message?.includes("rejected")
+              ? "Transaction annulée."
+              : err.message;
+            addLog(`Erreur dépôt : ${msg}`, "error");
+            showToast("Dépôt échoué.", "error");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "DÉPOSER";
+          }
+        });
+
+      // ════════════════════════════════════════════════════════════════
+      //  RETRAIT
+      // ════════════════════════════════════════════════════════════════
+
+      document
+        .getElementById("btn-withdraw")
+        .addEventListener("click", async () => {
+          const input = document.getElementById("withdraw-amount");
+          const amount = parseFloat(input.value);
+
+          if (!amount || amount <= 0) {
+            showToast("Entrez un montant valide.", "error");
+            return;
+          }
+
+          const btn = document.getElementById("btn-withdraw");
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner"></span> EN ATTENTE…';
+
+          try {
+            const amountWei = web3.utils.toWei(amount.toString(), "ether");
+
+            addLog(
+              `Retrait de ${amount} ETH en cours… (confirmez dans MetaMask)`,
+              "pending",
+            );
+
+            // Appel de la fonction withdraw(_amount) — pas payable, juste une transaction
+            const receipt = await contract.methods.withdraw(amountWei).send({
+              from: userAccount,
+            });
+
+            const txHash = receipt.transactionHash;
+            addLog(
+              `✅ Retrait réussi ! <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank">${txHash.slice(
+                0,
+                20,
+              )}…</a>`,
+              "success",
+            );
+            showToast(`Retrait de ${amount} ETH confirmé !`, "success");
+            input.value = "";
+            await refreshUI();
+          } catch (err) {
+            console.error(err);
+            const msg = err.message?.includes("rejected")
+              ? "Transaction annulée."
+              : err.message?.includes("Wrong withdraw amount")
+              ? "Solde insuffisant dans le Vault."
+              : err.message;
+            addLog(`Erreur retrait : ${msg}`, "error");
+            showToast("Retrait échoué.", "error");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "RETIRER";
+          }
+        });
+
+      // ════════════════════════════════════════════════════════════════
+      //  ÉCOUTE DES EVENTS EN TEMPS RÉEL
+      // ════════════════════════════════════════════════════════════════
+
+      function listenToEvents() {
+        // Event Deposit : émis à chaque dépôt de n'importe qui
+        contract.events.Deposit({ fromBlock: "latest" }).on("data", (evt) => {
+          const { from, amount } = evt.returnValues;
+          addLog(
+            `📥 Event Deposit — ${shortAddr(from)} a déposé ${toEth(
+              amount,
+            )} ETH`,
+            "info",
+          );
+          refreshUI();
+        });
+
+        // Event Withdraw : émis à chaque retrait de n'importe qui
+        contract.events.Withdraw({ fromBlock: "latest" }).on("data", (evt) => {
+          const { to, amount } = evt.returnValues;
+          addLog(
+            `📤 Event Withdraw — ${shortAddr(to)} a retiré ${toEth(
+              amount,
+            )} ETH`,
+            "info",
+          );
+          refreshUI();
+        });
+      }
+
+      // ════════════════════════════════════════════════════════════════
+      //  AUTO-CONNEXION si déjà autorisé
+      // ════════════════════════════════════════════════════════════════
+      window.addEventListener("load", async () => {
+        if (window.ethereum) {
+          // eth_accounts (sans popup) — vérifie si déjà connecté
+          const accounts = await window.ethereum.request({
+            method: "eth_accounts",
+          });
+          if (accounts.length > 0) connectWallet();
+        }
+      });
+    </script>
+  </body>
+</html>
