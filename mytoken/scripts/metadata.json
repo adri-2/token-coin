@@ -1,0 +1,8 @@
+{
+  "name": "TokenCoin",
+  "symbol": "TKC",
+  "description": "Token officiel TokenCoin",
+  "decimals": 18,
+  "logoURI": "https://monsite.com/logo.png",
+  "website": "https://monsite.com"
+}
