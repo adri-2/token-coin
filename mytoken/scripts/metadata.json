@@ -3,6 +3,6 @@
   "symbol": "TKC",
   "description": "Token officiel TokenCoin",
   "decimals": 18,
-  "logoURI": "https://monsite.com/logo.png",
-  "website": "https://monsite.com"
+  "logoURI": "https://github.com/adri-2/token-coin/blob/main/mytoken/logo.png?raw=true",
+  "website": "https://github.com/adri-2/token-coin"
 }
