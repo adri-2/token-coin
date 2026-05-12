@@ -1,0 +1,11 @@
+{
+  "name": "TokenCoin",
+  "symbol": "TKC",
+  "description": "Token officiel TokenCoin",
+  "decimals": 18,
+  "logoURI": "https://github.com/adri-2/token-coin/blob/main/mytoken/logo.png?raw=true",
+  "website": "https://github.com/adri-2/token-coin",
+  "id": "0xb4A80CCd9EA66c2FDCE48Fd589ab88De47d69744",
+  "status": "testing",
+  "type": "ERC20"
+}
