@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function ReceiveAddress() {
   const { address, isConnected } = useAccount();
+
   const [isOpen, setIsOpen] = useState(false);
   const [copyState, setCopyState] = useState("Copier l'adresse");
 
@@ -12,10 +14,16 @@ export default function ReceiveAddress() {
     try {
       await navigator.clipboard.writeText(address);
       setCopyState("Adresse copiée");
-      window.setTimeout(() => setCopyState("Copier l'adresse"), 1500);
+
+      window.setTimeout(() => {
+        setCopyState("Copier l'adresse");
+      }, 1500);
     } catch {
       setCopyState("Copie impossible");
-      window.setTimeout(() => setCopyState("Copier l'adresse"), 1500);
+
+      window.setTimeout(() => {
+        setCopyState("Copier l'adresse");
+      }, 1500);
     }
   };
 
@@ -29,7 +37,10 @@ export default function ReceiveAddress() {
     };
 
     window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
   }, [isOpen]);
 
   if (!isConnected) {
@@ -41,7 +52,7 @@ export default function ReceiveAddress() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="w-full rounded bg-violet-500 px-6 py-3 text-2xl font-semibold text-white hover:bg-violet-600 cursor-pointer"
+        className="w-full rounded bg-violet-500 px-6 py-3 text-2xl font-semibold text-white hover:bg-violet-600"
       >
         Recevoir
       </button>
@@ -59,13 +70,25 @@ export default function ReceiveAddress() {
               <h2 className="text-xl font-bold text-slate-900">
                 Adresse publique
               </h2>
+
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="text-2xl font-bold leading-none text-gray-500 hover:text-gray-700"
               >
-                X
+                ×
               </button>
+            </div>
+
+            <div className="mb-6 flex justify-center">
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <QRCodeSVG
+                  value={address || ""}
+                  size={220}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
             </div>
 
             <div className="rounded-lg border border-gray-300 px-3 py-2">
@@ -82,6 +105,7 @@ export default function ReceiveAddress() {
               >
                 {copyState}
               </button>
+
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}

@@ -78,7 +78,7 @@ export default function TransactionHistory({ contractAddress }) {
                 }`}
               >
                 {direction}
-                {amount} MTK
+                {amount} TKC
               </div>
             </div>
           );

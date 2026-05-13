@@ -1,15 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import {
   useAccount,
+  useChainId,
+  useSwitchChain,
   useWriteContract,
   useWaitForTransactionReceipt,
   useReadContract,
 } from "wagmi";
 import { parseEther, formatEther } from "viem";
+import { sepolia } from "wagmi/chains";
 import { tokenAbi } from "../utils/abi";
 
 export default function TransferTokens({ contractAddress }) {
   const { address } = useAccount();
+  const chainId = useChainId();
+  const targetChainId = Number(import.meta.env.VITE_CHAIN_ID || sepolia.id);
   const [toAddress, setToAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,14 +27,25 @@ export default function TransferTokens({ contractAddress }) {
     abi: tokenAbi,
     functionName: "balanceOf",
     args: [address],
+    chainId: targetChainId,
   });
 
-  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { switchChainAsync, isPending: isSwitchingChain } = useSwitchChain();
+
+  const {
+    writeContractAsync,
+    data: hash,
+    isPending,
+    error: writeError,
+  } = useWriteContract();
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const writeErrorMessage = writeError
+    ? writeError.shortMessage || writeError.message || "Transaction echouee"
+    : "";
 
   const isValidAddress = (addr) => /^0x[a-fA-F0-9]{40}$/.test(addr);
 
-  const handleTransfer = () => {
+  const handleTransfer = async () => {
     setError("");
 
     if (!toAddress.trim()) {
@@ -47,15 +63,26 @@ export default function TransferTokens({ contractAddress }) {
       return;
     }
 
+    if (!chainId) {
+      setError("Réseau non détecté. Reconnecte ton wallet.");
+      return;
+    }
+
     try {
-      writeContract({
+      if (chainId !== targetChainId) {
+        await switchChainAsync({ chainId: targetChainId });
+      }
+
+      await writeContractAsync({
         address: contractAddress,
         abi: tokenAbi,
         functionName: "transfer",
         args: [toAddress, parseEther(amount)],
+        chainId: targetChainId,
       });
     } catch (err) {
-      setError(`Erreur: ${err.message}`);
+      const message = err?.shortMessage || err?.message || "Erreur inconnue";
+      setError(`Erreur: ${message}`);
     }
   };
 
@@ -159,19 +186,23 @@ export default function TransferTokens({ contractAddress }) {
                 Solde disponible: {balance ? formatEther(balance) : "0"} TKC
               </div>
 
-              {error && (
+              {(error || writeErrorMessage) && (
                 <div className="bg-red-50 border border-red-200 p-3 rounded text-red-700 text-sm">
-                  {error}
+                  {error || `Erreur: ${writeErrorMessage}`}
                 </div>
               )}
 
               <button
                 onClick={handleTransfer}
-                disabled={isPending || isLoading || hasShownSuccess}
+                disabled={
+                  isPending || isLoading || isSwitchingChain || hasShownSuccess
+                }
                 className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
               >
                 {hasShownSuccess
                   ? " Transfert effectué !"
+                  : isSwitchingChain
+                  ? "Changement de réseau..."
                   : isPending
                   ? "Envoi en cours..."
                   : isLoading
