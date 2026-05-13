@@ -1,6 +1,9 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
+const mainnetPrivateKey =
+  process.env.MAINNET_PRIVATE_KEY || process.env.PRIVATE_KEY;
+
 module.exports = {
   solidity: {
     version: "0.8.28",
@@ -22,9 +25,18 @@ module.exports = {
     },
     // Testnet Sepolia (Ethereum)
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
+      url:
+        process.env.RPC_URL ||
+        process.env.SEPOLIA_RPC_URL ||
+        "https://ethereum-sepolia-rpc.publicnode.com",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 11155111,
+    },
+    // Mainnet Ethereum (production)
+    mainnet: {
+      url: process.env.MAINNET_RPC_URL || "https://eth.llamarpc.com",
+      // Fallback sur PRIVATE_KEY pour éviter un runner sans signer.
+      accounts: [process.env.PRIVATE_KEY],
     },
   },
   etherscan: {
