@@ -8,8 +8,8 @@ export default function ConnectWallet() {
   const walletConnector = connectors[0];
 
   return (
-    <div className="flex  items-center justify-between gap-4 bg-gradient-to-t from-violet-500 to-purple-700 text-white p-4 rounded-xl  shadow-lg w-full">
-      <h1 className="text-3xl">Wallet TKC</h1>
+    <div className="flex flex-col gap-4 rounded-xl bg-gradient-to-t from-violet-500 to-purple-700 p-4 text-white shadow-lg sm:flex-row sm:items-center sm:justify-between">
+      <h1 className="text-2xl sm:text-3xl">Wallet TKC</h1>
       {isConnected ? (
         <div className="flex flex-col">
           <p>
@@ -17,7 +17,7 @@ export default function ConnectWallet() {
           </p>
           <button
             type="button"
-            className="py-2 px-4 rounded-lg bg-violet-800 hover:bg-violet-900  font-bold   hover:scale-105 transition-all cursor-pointer"
+            className="cursor-pointer rounded-lg bg-violet-800 px-4 py-2 font-bold transition-all hover:scale-105 hover:bg-violet-900"
             onClick={() => disconnect()}
           >
             Déconnecter
@@ -26,7 +26,7 @@ export default function ConnectWallet() {
       ) : (
         <button
           type="button"
-          className="py-2 px-4 rounded-lg bg-violet-800 hover:bg-violet-900  font-bold   hover:scale-105 transition-all cursor-pointer"
+          className="cursor-pointer rounded-lg bg-violet-800 px-4 py-2 font-bold transition-all hover:scale-105 hover:bg-violet-900"
           onClick={() =>
             walletConnector && connect({ connector: walletConnector })
           }

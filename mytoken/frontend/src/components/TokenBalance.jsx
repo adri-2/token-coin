@@ -24,15 +24,10 @@ export default function TokenBalance({ contractAddress }) {
   }, [isConnected, address, refetchBalance]);
   if (!isConnected) return <p>Connectez votre wallet</p>;
   return (
-    <div className="card">
-      <div className="">
-        <p className="text-6xl font-bold">
+    <div className="">
+      <div className="mt-4 rounded-lg bg-linear-to-t p-4 text-white shadow-lg from-violet-500 to-purple-700 flex justify-center">
+        <p className="text-4xl font-bold sm:text-6xl">
           {balance ? formatEther(balance) : "0"} TKC
-        </p>
-      </div>
-      <div className="mt-4 shadow-lg p-4 rounded-lg bg-gradient-to-t from-violet-500 to-purple-700 text-white">
-        <p className="text-2xl">
-          Offre totale : {totalSupply ? formatEther(totalSupply) : "0"} TKC
         </p>
       </div>
 

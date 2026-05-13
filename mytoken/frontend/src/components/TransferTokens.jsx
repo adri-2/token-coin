@@ -61,7 +61,10 @@ export default function TransferTokens({ contractAddress }) {
 
   useEffect(() => {
     if (isSuccess) {
-      setHasShownSuccess(true);
+      const showTimer = setTimeout(() => {
+        setHasShownSuccess(true);
+      }, 0);
+
       const timer = setTimeout(() => {
         setToAddress("");
         setAmount("");
@@ -70,9 +73,12 @@ export default function TransferTokens({ contractAddress }) {
         setHasShownSuccess(false);
       }, 2000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(timer);
+      };
     }
-  }, [isSuccess, hasShownSuccess]);
+  }, [isSuccess]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -93,13 +99,14 @@ export default function TransferTokens({ contractAddress }) {
   }, [isModalOpen]);
 
   return (
-    <div className="card">
+    <div>
       {/* <h3>Transférer des tokens</h3>
       <p>Votre solde : {balance ? formatEther(balance) : "0"} TKC</p> */}
       <button
         id="transferButton"
+        type="button"
         onClick={() => setIsModalOpen(!isModalOpen)}
-        className="px-6 py-2 bg-violet-500 text-2xl text-white rounded hover:bg-violet-600"
+        className="w-full rounded bg-violet-500 px-6 py-3 text-2xl text-white hover:bg-violet-600 cursor-pointer"
       >
         Envoyer
       </button>

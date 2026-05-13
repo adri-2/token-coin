@@ -1,10 +1,11 @@
-import { useContractEvents, usePublicClient } from "wagmi";
+import { useAccount, useContractEvents, usePublicClient } from "wagmi";
 import { tokenAbi } from "../utils/abi";
 import { useEffect, useState } from "react";
 import { formatEther } from "viem";
 
 export default function TransactionHistory({ contractAddress }) {
   const [fromBlock, setFromBlock] = useState(undefined);
+  const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
 
   const formatAddress = (address) => {
@@ -33,14 +34,22 @@ export default function TransactionHistory({ contractAddress }) {
     abi: tokenAbi,
     eventName: "Transfer",
     fromBlock,
-    enabled: !!fromBlock,
+    enabled: !!fromBlock && isConnected && !!address,
   });
 
   if (error) return <p>Erreur : {error.message}</p>;
   if (isLoading) return <p>Chargement historique...</p>;
-  if (!events || events.length === 0) return <p>Aucune transaction trouvée.</p>;
+  if (!isConnected || !address) return null;
 
-  const recentEvents = [...events].slice(-20).reverse();
+  const relevantEvents = (events ?? []).filter(
+    (event) =>
+      event.args.from?.toLowerCase() === address.toLowerCase() ||
+      event.args.to?.toLowerCase() === address.toLowerCase(),
+  );
+
+  if (relevantEvents.length === 0) return <p>Aucune transaction trouvée.</p>;
+
+  const recentEvents = [...relevantEvents].slice(-20).reverse();
 
   return (
     <div className="rounded-2xl border border-violet-200/10 bg-violet-500 p-5 text-white">
@@ -48,14 +57,11 @@ export default function TransactionHistory({ contractAddress }) {
 
       <div className="space-y-2">
         {recentEvents.map((event, idx) => {
-          const from =
-            event.args.from === "0x0000000000000000000000000000000000000000"
-              ? "Mint"
-              : formatAddress(event.args.from);
-          const to =
-            event.args.to === "0x0000000000000000000000000000000000000000"
-              ? "Burn"
-              : formatAddress(event.args.to);
+          const from = formatAddress(event.args.from);
+          const to = formatAddress(event.args.to);
+          const direction =
+            event.args.to?.toLowerCase() === address.toLowerCase() ? "+" : "-";
+          const amount = formatEther(event.args.value);
 
           return (
             <div
@@ -66,8 +72,13 @@ export default function TransactionHistory({ contractAddress }) {
                 {from} <span className="text-violet-300">→</span> {to}
               </div>
 
-              <div className="text-sm text-emerald-300 sm:text-right">
-                {formatEther(event.args.value)} MTK
+              <div
+                className={`text-sm sm:text-right ${
+                  direction === "+" ? "text-emerald-300" : "text-rose-300"
+                }`}
+              >
+                {direction}
+                {amount} MTK
               </div>
             </div>
           );

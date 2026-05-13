@@ -34,7 +34,7 @@ export default function BuyTokens({ contractAddress }) {
       {/* <h3>Acheter des tokens</h3>
       <p>Ouvre le formulaire modal pour saisir le montant en ETH.</p> */}
       <button
-        className="px-6 py-2 bg-violet-500 text-2xl text-white rounded hover:bg-violet-600"
+        className="w-full rounded bg-violet-500 px-6 py-2 text-lg text-white hover:bg-violet-600 sm:w-auto sm:text-2xl"
         onClick={() => {
           setEthAmount("");
           setIsOpen(true);
